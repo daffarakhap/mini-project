@@ -21,10 +21,9 @@ func ConnectDatabase() {
 		log.Panicf("❌ Failed to connect to database: %v", err)
 	}
 
-	// ✅ Simpan koneksi
 	DB = db
 
-	// ✅ AutoMigrate semua model
+	// Auto migrate table Bioskop
 	err = db.AutoMigrate(&Bioskop{})
 	if err != nil {
 		log.Panicf("❌ Migration failed: %v", err)
@@ -32,6 +31,7 @@ func ConnectDatabase() {
 
 	log.Println("✅ Database connected & migrated")
 }
+
 
 
 
