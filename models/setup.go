@@ -11,26 +11,28 @@ import (
 var DB *gorm.DB
 
 func ConnectDatabase() {
-	// Ambil variable dari Railway
-	host := os.Getenv("postgres.railway.internal")
-	user := os.Getenv("postgres")
-	password := os.Getenv("inKAsaiCbAimbamplOoHsPSHGmcrNbcc")
-	dbname := os.Getenv("railway")
-	port := os.Getenv("5432")
+	// Ambil URL database dari Railway (sudah include host, user, password, dbname, port)
+	dsn := os.Getenv("postgresql://postgres:inKAsaiCbAimbamplOoHsPSHGmcrNbcc@postgres.railway.internal:5432/railway")
+	if dsn == "" {
+		panic("DATABASE_URL environment variable is not set")
+	}
 
-	// Susun dsn sesuai format PostgreSQL
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta",
-		host, user, password, dbname, port,
-	)
-
+	// Connect ke database
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database: " + err.Error())
 	}
 
-	// Auto migrate model
-	database.AutoMigrate(&Bioskop{})
+	fmt.Println("✅ Connected to database")
+
+	// Auto migrate models
+	err = database.AutoMigrate(&Bioskop{})
+	if err != nil {
+		panic("Migration failed: " + err.Error())
+	}
+
+	fmt.Println("✅ Migration success")
 
 	DB = database
 }
+

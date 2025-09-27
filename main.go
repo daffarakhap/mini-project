@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"mini-project/controllers/bioskopcontroller"
 	"mini-project/models"
 
@@ -8,14 +11,27 @@ import (
 )
 
 func main() {
-	router := gin.Default()
+	// Connect ke database Railway
 	models.ConnectDatabase()
+	fmt.Println("✅ Database connected & migrated")
 
+	// Setup Gin router
+	router := gin.Default()
+
+	// Routes
 	router.GET("/bioskop", bioskopcontroller.Index)
 	router.GET("/bioskop/:id", bioskopcontroller.Show)
 	router.POST("/bioskop", bioskopcontroller.Create)
 	router.PUT("/bioskop/:id", bioskopcontroller.Update)
 	router.DELETE("/bioskop/:id", bioskopcontroller.Delete)
 
-	router.Run()
+	// Port Railway biasanya pakai PORT dari environment variable
+	port := os.Getenv("5432")
+	if port == "" {
+		port = "8080" // default untuk local
+	}
+
+	// Jalankan server
+	router.Run(":" + port)
 }
+
