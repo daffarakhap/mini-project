@@ -26,7 +26,7 @@ func main() {
 	router.DELETE("/bioskop/:id", bioskopcontroller.Delete)
 
 	// Port Railway biasanya pakai PORT dari environment variable
-	port := os.Getenv("5432")
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080" // default untuk local
 	}
