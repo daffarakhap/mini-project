@@ -2,8 +2,10 @@ package models
 
 import (
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -11,35 +13,39 @@ import (
 var DB *gorm.DB
 
 func ConnectDatabase() {
-	// Ambil variable dari Railway
-	host := os.Getenv("postgres.railway.internal")
-	user := os.Getenv("postgres")
-	password := os.Getenv("inKAsaiCbAimbamplOoHsPSHGmcrNbcc")
-	dbname := os.Getenv("railway")
-	port := os.Getenv("5432")
-
-	// Susun dsn sesuai format PostgreSQL
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta",
-		host, user, password, dbname, port,
-	)
-
-	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	// Load file .env
+	err := godotenv.Load()
 	if err != nil {
-		panic("Failed to connect to database: " + err.Error())
+		log.Println("⚠️ .env file not found, using system env")
 	}
 
-	fmt.Println("✅ Connected to database")
+	// Ambil dari env
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		host := os.Getenv("PGHOST")
+		user := os.Getenv("PGUSER")
+		password := os.Getenv("PGPASSWORD")
+		dbname := os.Getenv("PGDATABASE")
+		port := os.Getenv("PGPORT")
+		sslmode := os.Getenv("PGSSLMODE")
+		if sslmode == "" {
+			sslmode = "disable" // default kalau tidak ada
+		}
 
-	// Auto migrate models
-	err = database.AutoMigrate(&Bioskop{})
-	if err != nil {
-		panic("Migration failed: " + err.Error())
+		dsn = fmt.Sprintf(
+			"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=Asia/Jakarta",
+			host, user, password, dbname, port, sslmode,
+		)
 	}
 
-	fmt.Println("✅ Migration success")
+	// Connect ke PostgreSQL
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Panic("❌ Failed to connect to database:", err)
+	}
 
-	DB = database
+	log.Println("✅ Database connected successfully!")
 }
+
 
 
